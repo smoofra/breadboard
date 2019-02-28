@@ -1,0 +1,39 @@
+This is an Arduino on a breadboard.  I don't claim any originality here, this is
+all copied from various sources on the internet.
+
+My ISP cable looks like this, from above, with the connector facing down plugged
+into the board.
+
+     ||||
+     ||||
+     ||||
+     ||||
+     ||||
+     ||||
++-----------------+
+|RESET  SCK  MISO |
+|GND    MOSI +5V  |
++-----------------+
+
+The serial on this board isn't on the standard pins for some reason, I put it on
+18 and 19.  I don't remember why.
+
+The serial header is:
+
++-------------------------+
+| +5V GND boardRX boardTX |
++-------------------------+
+
+pins for prolific USB cable are:
+
+black  = ground
+red    = power
+white  = RX (into usb cable)
+green  = TX (from usb cable)
+
+so plugged into the board, thats: red, black green white
+
+That's if they're all plugged in.  It's probably not a good idea to plug in the
++5V from the prolific cable if the ISP header is also plugged in.
+
+

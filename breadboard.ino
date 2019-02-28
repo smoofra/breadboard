@@ -43,7 +43,7 @@ void setup()
 void loop()
 {
   delay(1000);
-  softserial.write("test, 1 2 3 4\n");
+  softserial.write("test1234\n");
   digitalWrite(LED, HIGH);
   delay(100); 
   digitalWrite(LED, LOW);
