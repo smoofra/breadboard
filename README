@@ -1,6 +1,8 @@
 This is an Arduino on a breadboard.  I don't claim any originality here, this is
 all copied from various sources on the internet.
 
+The chip is an ATmega328.  The breakout board is a thermocouple sensor.
+
 My ISP cable looks like this, from above, with the connector facing down plugged
 into the board.
 
