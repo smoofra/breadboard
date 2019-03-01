@@ -55,7 +55,7 @@ void loop()
    if (isnan(t)) {
      softserial.println("Something wrong with thermocouple!");
    } else {
-     softserial.print("C = "); 
+     softserial.print("F = "); 
      softserial.println(t);
    }
 
