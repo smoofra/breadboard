@@ -1,6 +1,12 @@
+#include <Adafruit_MAX31855.h>
+#include <SoftwareSerial.h>
+
 #define LED 9
 
-#include <SoftwareSerial.h>
+#define MAXDO   3
+#define MAXCS   4
+#define MAXCLK  5
+
 
 // ATMEL ATMEGA8 & 168 / ARDUINO
 //
@@ -21,6 +27,7 @@
 //      (D 8) PB0 14|    |15  PB1 (D 9) PWM
 //                  +----+
 
+Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
 SoftwareSerial softserial(18, 19); // RX, TX
 
@@ -43,7 +50,15 @@ void setup()
 void loop()
 {
   delay(1000);
-  softserial.write("test1234\n");
+
+   double t = thermocouple.readFarenheit();
+   if (isnan(t)) {
+     softserial.println("Something wrong with thermocouple!");
+   } else {
+     softserial.print("C = "); 
+     softserial.println(t);
+   }
+
   digitalWrite(LED, HIGH);
   delay(100); 
   digitalWrite(LED, LOW);
