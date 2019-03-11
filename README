@@ -5,7 +5,8 @@ temperature control board for a hot plate.
 The chip is an ATmega328.  The breakout board is a thermocouple sensor.
 
 My ISP cable looks like this, from above, with the connector facing down plugged
-into the board.
+into the board.  (on an Arduino UNO the bottom part is towards the outside of
+the board).
 
      ||||
      ||||

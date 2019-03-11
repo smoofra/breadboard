@@ -35,7 +35,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 //            PB7 10|    |19  PB5 (D 13)
 // PWM+ (D 5) PD5 11|    |18  PB4 (D 12)
 // PWM+ (D 6) PD6 12|    |17  PB3 (D 11) PWM
-//      (D 7) PD7 13|    |16  PB2 (D 10) PWM  --> solid state relay
+//      (D 7) PD7 13|    |16  PB2 (D 10) PWM
 //      (D 8) PB0 14|    |15  PB1 (D 9) PWM
 //                  +----+
 
@@ -51,11 +51,11 @@ void setup()
     for(;;); // Don't proceed, loop forever
   }
   display.clearDisplay();
-  display.setTextSize(1);      // Normal 1:1 pixel scale
+  display.setTextSize(2);      // Normal 1:1 pixel scale
   display.setTextColor(WHITE); // Draw white text
   display.setCursor(0, 0);     // Start at top-left corner
   display.cp437(true);         // Use full 256 char 'Code Page 437' font
-  display.write('&');
+  display.print("&");
   display.display();
   
   pinMode(LED, OUTPUT);
@@ -73,12 +73,18 @@ void loop()
   delay(1000);
 
    double t = thermocouple.readFarenheit();
+   display.setCursor(0, 0);
+   display.fillRect(0,0,127,15,BLACK);
    if (isnan(t)) {
      Serial.println("Something wrong with thermocouple!");
-   } else {
+     display.print("??!");
+    } else {
      Serial.print("F = ");
      Serial.println(t);
+     display.print("F = ");
+     display.print(t);
    }
+   display.display();
 
   digitalWrite(LED, HIGH);
   delay(100); 
