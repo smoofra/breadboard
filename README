@@ -43,6 +43,10 @@ where the red and black go.  The board can be powerd by the red +5V pin from the
 prolific cable, but it's probably not a good idea to plug in the +5V from the
 prolific cable if the ISP header is also plugged in.
 
+Front panel is black, white green.
+
+Front panel ICSP cable has GND on the upper right.
+
 On the other side of the board there's an I2C header:
 
 +-----------------+

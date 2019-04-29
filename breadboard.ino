@@ -14,6 +14,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 #define RELAY 10
 #define LED 9
+#define BUTTON 8
 
 #define MAXDO   3
 #define MAXCS   4
@@ -41,22 +42,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
-double temp_setpoint, temp_input, pid_output;
-
-const double
-  Kp = 1,
-  Ki = 0,
-  Kd = 0,
-  window_ms = 2000;
-
-//PID pid(&temp_input, &pid_output, &temp_setpoint, Kp, Ki, Kd, DIRECT);
-
 class PID
 {
   static const double
-    Kp = 1,
-    Ki = 0,
-    Kd = 0;
+    Kp = 1.0 / 100.0,
+    Ki = 1.0 / 10.0,
+    Kd = 1.0 / 10.0;
 
   static const unsigned long
     window_ms = 1000,
@@ -81,14 +72,14 @@ class PID
    bool compute(double input)
    {
       unsigned long now = millis();
-      if (now - last_sample_ms >= sample_ms) {
+      if (!isnan(input) && (now - last_sample_ms >= sample_ms)) {
         double error = (input - setpoint);
         double delta_t =  ((double)(now - last_sample_ms)) / 1000;
 
         output = Kp * error;
 
         sum += Ki * delta_t * error;
-        sum = constrain(sum, -1, 1);
+        sum = constrain(sum, -1, .5);
         output += sum;
 
         if (!isnan(last_input)) {
@@ -107,11 +98,13 @@ class PID
    }
 };
 
-PID pid(475);
+PID pid(200);
 
 void setup()
 {
   Serial.begin(9600);
+
+  pinMode(BUTTON, INPUT_PULLUP);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
@@ -122,7 +115,7 @@ void setup()
   display.setTextColor(WHITE); // Draw white text
   display.setCursor(0, 0);     // Start at top-left corner
   display.cp437(true);         // Use full 256 char 'Code Page 437' font
-  display.print("&");
+  display.print("&&");
   display.display();
 
   pinMode(RELAY, OUTPUT);
@@ -151,6 +144,12 @@ void draw(double t)
      display.print("F = ");
      display.print(t);
    }
+
+   int x = digitalRead(BUTTON);
+   display.setCursor(0,16);
+   display.fillRect(0,16, 127, 15, BLACK);
+   display.print(x ? "on" : "off");
+
    display.display();
 }
 
