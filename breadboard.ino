@@ -1,6 +1,5 @@
 #include <Adafruit_MAX31855.h>
 #include <SoftwareSerial.h>
-
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -13,6 +12,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 
+#define RELAY 10
 #define LED 9
 
 #define MAXDO   3
@@ -41,6 +41,73 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
+double temp_setpoint, temp_input, pid_output;
+
+const double
+  Kp = 1,
+  Ki = 0,
+  Kd = 0,
+  window_ms = 2000;
+
+//PID pid(&temp_input, &pid_output, &temp_setpoint, Kp, Ki, Kd, DIRECT);
+
+class PID
+{
+  static const double
+    Kp = 1,
+    Ki = 0,
+    Kd = 0;
+
+  static const unsigned long
+    window_ms = 1000,
+    sample_ms = 100;
+
+  unsigned long last_window_ms, last_sample_ms;
+  double last_input;
+  double output;
+  double setpoint;
+  double sum;
+
+ public:
+   PID(double sp)
+   {
+     setpoint = sp;
+     last_window_ms = last_sample_ms = millis();
+     output = 0;
+     sum = 0;
+     last_input = NAN;
+   }
+
+   bool compute(double input)
+   {
+      unsigned long now = millis();
+      if (now - last_sample_ms >= sample_ms) {
+        double error = (input - setpoint);
+        double delta_t =  ((double)(now - last_sample_ms)) / 1000;
+
+        output = Kp * error;
+
+        sum += Ki * delta_t * error;
+        sum = constrain(sum, -1, 1);
+        output += sum;
+
+        if (!isnan(last_input)) {
+          output -= Kd * (input - last_input) / delta_t;
+        }
+
+        output = constrain(output, 0, 1);
+
+        last_input = input;
+        last_sample_ms = now;
+      }
+      if (now - last_window_ms >= window_ms) {
+        last_window_ms = now;
+      }
+      return (((double)(now - last_window_ms)) / window_ms) >= output;
+   }
+};
+
+PID pid(475);
 
 void setup()
 {
@@ -57,6 +124,9 @@ void setup()
   display.cp437(true);         // Use full 256 char 'Code Page 437' font
   display.print("&");
   display.display();
+
+  pinMode(RELAY, OUTPUT);
+  digitalWrite(RELAY, LOW);
   
   pinMode(LED, OUTPUT);
   for (int i = 0; i < 5; i++) { 
@@ -68,11 +138,8 @@ void setup()
   delay(2000);
 }
 
-void loop()
+void draw(double t)
 {
-  delay(1000);
-
-   double t = thermocouple.readFarenheit();
    display.setCursor(0, 0);
    display.fillRect(0,0,127,15,BLACK);
    if (isnan(t)) {
@@ -85,8 +152,20 @@ void loop()
      display.print(t);
    }
    display.display();
+}
 
-  digitalWrite(LED, HIGH);
-  delay(100); 
-  digitalWrite(LED, LOW);
+void loop()
+{
+   double t = thermocouple.readFarenheit();
+
+   bool relay_out = pid.compute(t);
+   digitalWrite(RELAY, relay_out);
+
+   static unsigned long lastupdate = 0;
+   unsigned long now = millis();
+   if (now - lastupdate > 500)
+   {
+      lastupdate = now;
+      draw(t);
+   }
 }
